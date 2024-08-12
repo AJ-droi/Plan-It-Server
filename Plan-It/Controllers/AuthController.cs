@@ -128,11 +128,17 @@ namespace Plan_It.Controllers
 
             var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Email == loginDto.Email);
 
-            if (user == null) return Unauthorized("Invalid Email!");
+            if (user == null) return Unauthorized(new ResponseDto{
+                Status = "Email Error",
+                Message = "Email not found"
+            });
 
             var result = await _userManager.CheckPasswordAsync(user, loginDto.Password);
 
-            if (!result) return Unauthorized("Password is incorrect");
+            if (!result) return Unauthorized(new ResponseDto{
+                Status = "Password Error",
+                Message = "Password not correct"
+            });
 
             return Ok(
                 new NewUserDto

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Plan_It.Dto.Authentication;
 using Plan_It.Dto.Query;
 using Plan_It.Interfaces;
 using Plan_It.Models;
@@ -71,7 +72,6 @@ namespace Plan_It.Controllers
 
                 userInfo.BirthDay = updateUserDto.BirthDay;
                 userInfo.UserStatus = updateUserDto.UserStatus;
-                userInfo.TaskId = updateUserDto.TaskId;
                 userInfo.GroupId = updateUserDto.GroupId;
 
                 var updatedUser = await _userRepo.UpdateUser(id, userInfo);
@@ -91,6 +91,27 @@ namespace Plan_It.Controllers
             try
             {
                 var user = await _userRepo.RemoveUser(id);
+
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPut("assign-task/{id}")]
+        [Authorize]
+        public async Task<IActionResult> AssignTaskInstruction([FromRoute] string id, [FromBody] AssignTaskInstructionDto assignTaskInstruction)
+        {
+            try
+            {
+                var user = await _userRepo.AssignTaskInstruction(id, assignTaskInstruction);
 
                 if (user == null)
                 {

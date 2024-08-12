@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Plan_It.Dto.Query;
+using Plan_It.Dto.Authentication;
 
 namespace Plan_It.Controllers
 {
@@ -32,7 +33,21 @@ namespace Plan_It.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                var validationErrors = ModelState
+                    .Where(ms => ms.Value.Errors.Count > 0)
+                    .ToDictionary(
+                        kvp => kvp.Key,
+                        kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                    );
+
+                var errorResponse = new ValidationErrorResponse
+                {
+                    Status = "Error",
+                    Message = "Validation failed",
+                    Errors = validationErrors
+                };
+
+                return BadRequest(errorResponse);
             }
 
             try
@@ -50,7 +65,7 @@ namespace Plan_It.Controllers
                 if (user == null)
                 {
                     _logger.LogWarning("Unauthorized attempt to create task. User not found.");
-                    return Unauthorized();
+                    return Unauthorized(new ResponseDto { Status = "Error", Message = "User not found" });
                 }
 
 
@@ -70,12 +85,17 @@ namespace Plan_It.Controllers
 
                 _logger.LogInformation($"Task created successfully for user {user.UserName}");
 
-                return Ok(createdTask);
+                return Ok(new ResponseDto { Status = "Success", Message = "New Task has been added" });
+
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while creating task");
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, new ResponseDto
+                {
+                    Status = "Error",
+                    Message = "An error occurred while creating the task"
+                });
             }
         }
 

@@ -1,3 +1,4 @@
+using Plan_It.Dto.Authentication;
 using Plan_It.Dto.Query;
 using Plan_It.Models;
 
@@ -7,5 +8,6 @@ namespace Plan_It.Interfaces{
        Task<List<ApplicationUser>> GetAllUsers(UserDto query);
        Task<ApplicationUser> UpdateUser(string id, ApplicationUser user);
        Task<ApplicationUser> RemoveUser(string id);
+       Task<ApplicationUser> AssignTaskInstruction(string id, AssignTaskInstructionDto assignTaskInstruction);
     }
 }

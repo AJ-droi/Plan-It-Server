@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Plan_It.Data;
+using Plan_It.Dto.Authentication;
 using Plan_It.Dto.Query;
 using Plan_It.Interfaces;
 using Plan_It.Models;
@@ -74,8 +75,9 @@ namespace Plan_It.Repository
             userQuery = userQuery.Skip(skipNumber).Take(query.PageSize);
 
             // Include related data
-            userQuery = userQuery.Include(user => user.Group);
-
+            userQuery = userQuery
+                            .Include(user => user.Group);
+                            
             // Execute the query and return the results
             return await userQuery.ToListAsync();
         }
@@ -92,7 +94,6 @@ namespace Plan_It.Repository
 
             userInfo.BirthDay = user.BirthDay;
             userInfo.UserStatus = user.UserStatus;
-            userInfo.TaskId = user.TaskId;
             userInfo.GroupId = user.GroupId;
 
 
@@ -110,6 +111,20 @@ namespace Plan_It.Repository
             }
 
             await _userManager.DeleteAsync(userInfo);
+            return userInfo;
+        }
+
+
+        public async Task<ApplicationUser> AssignTaskInstruction(string id, AssignTaskInstructionDto assignTaskInstruction){
+            var userInfo = await _userManager.Users.FirstOrDefaultAsync(t => t.Id == id);
+
+            if(userInfo == null){
+                return null;
+            }
+
+            userInfo.TaskInstruction = assignTaskInstruction.instruction;
+
+            await _userManager.UpdateAsync(userInfo);
             return userInfo;
         }
 

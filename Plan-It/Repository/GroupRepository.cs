@@ -19,7 +19,11 @@ namespace Plan_It.Repository{
         }
 
         public async Task<Group> GroupInfo(Guid id){
-            var groupInfo = await _context.Groups.FirstOrDefaultAsync(t => t.Id == id);
+            var groupInfo = await _context.Groups
+                                  .Include(g => g.Users)
+                                  .Include(g => g.GroupTasks)
+                                    .ThenInclude(gt => gt.Task)
+                                  .FirstOrDefaultAsync(t => t.Id == id);
 
             if(groupInfo == null){
                 return null;
